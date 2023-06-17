@@ -1,0 +1,66 @@
+1: {'id': 0, 'name': 'anglertoad', 'has_idle': True}
+2: {'id': 1, 'name': 'badgolin', 'has_idle': True}
+3: {'id': 2, 'name': 'bat', 'has_idle': True}
+4: {'id': 3, 'name': 'beast', 'has_idle': True}
+5: {'id': 4, 'name': 'bee', 'has_idle': True}
+6: {'id': 5, 'name': 'bee2', 'has_idle': True}
+7: {'id': 6, 'name': 'bluebird', 'has_idle': True}
+8: {'id': 7, 'name': 'boar', 'has_idle': True}
+9: {'id': 8, 'name': 'boar_desert', 'has_idle': True}
+10: {'id': 9, 'name': 'boar_ice', 'has_idle': True}
+11: {'id': 10, 'name': 'bunny', 'has_idle': True}
+12: {'id': 11, 'name': 'bunny_brown', 'has_idle': True}
+13: {'id': 12, 'name': 'bunny_purple', 'has_idle': True}
+14: {'id': 13, 'name': 'bunny_white', 'has_idle': True}
+15: {'id': 14, 'name': 'chicken'}
+16: {'id': 15, 'name': 'chimp'}
+17: {'id': 16, 'name': 'cockatoo'}
+18: {'id': 17, 'name': 'crab'}
+19: {'id': 18, 'name': 'crabclaw'}
+20: {'id': 19, 'name': 'crawlershell'}
+21: {'id': 20, 'name': 'crawlerspiked'}
+22: {'id': 21, 'name': 'daschundsprite1'}
+23: {'id': 22, 'name': 'daschundsprite2'}
+24: {'id': 23, 'name': 'daschundsprite3', 'has_idle': True}
+25: {'id': 24, 'name': 'duck'}
+26: {'id': 25, 'name': 'dungeonbot'}
+27: {'id': 26, 'name': 'firefly'}
+28: {'id': 27, 'name': 'flying_creature', 'has_idle': True}
+29: {'id': 28, 'name': 'forager', 'has_idle': True}
+30: {'id': 29, 'name': 'forager_brown', 'has_idle': True}
+31: {'id': 30, 'name': 'forager_white', 'has_idle': True}
+32: {'id': 31, 'name': 'forearm_face_creature-sheet'}
+33: {'id': 32, 'name': 'frog'}
+34: {'id': 33, 'name': 'frogish', 'has_idle': True}
+35: {'id': 34, 'name': 'goose', 'has_idle': True}
+36: {'id': 35, 'name': 'granna', 'has_idle': True}
+37: {'id': 36, 'name': 'hopper'}
+38: {'id': 37, 'name': 'hydroid'}
+39: {'id': 38, 'name': 'jelly'}
+40: {'id': 39, 'name': 'maggot'}
+41: {'id': 40, 'name': 'manseal'}
+42: {'id': 41, 'name': 'manseal2'}
+43: {'id': 42, 'name': 'mimic_larvae', 'has_idle': True}
+44: {'id': 43, 'name': 'mole'}
+45: {'id': 44, 'name': 'mole_blue'}
+46: {'id': 45, 'name': 'mole_red'}
+47: {'id': 46, 'name': 'newbeast', 'has_idle': True}
+48: {'id': 47, 'name': 'newdillo', 'has_idle': True}
+49: {'id': 48, 'name': 'newdillo_brown', 'has_idle': True}
+50: {'id': 49, 'name': 'predator'}
+51: {'id': 50, 'name': 'rockydillo', 'has_idle': True}
+52: {'id': 51, 'name': 'scoon', 'has_idle': True}
+53: {'id': 52, 'name': 'scorpion'}
+54: {'id': 53, 'name': 'shell_creature', 'has_idle': True}
+55: {'id': 54, 'name': 'silicoid', 'has_idle': True}
+56: {'id': 55, 'name': 'silkslug'}
+57: {'id': 56, 'name': 'snailsmall'}
+58: {'id': 57, 'name': 'snake'}
+59: {'id': 58, 'name': 'snake_green'}
+60: {'id': 59, 'name': 'snowkiwi', 'has_idle': True}
+61: {'id': 60, 'name': 'stickler-particle'}
+62: {'id': 61, 'name': 'stickler-red', 'has_idle': True}
+63: {'id': 62, 'name': 'stickleranchors'}
+64: {'id': 63, 'name': 'sticklerprojectile'}
+65: {'id': 64, 'name': 'worm', 'has_idle': True}
+66: {'id': 65, 'name': 'wormdesert', 'has_idle': True}
