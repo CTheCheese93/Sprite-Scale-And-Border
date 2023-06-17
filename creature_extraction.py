@@ -64,7 +64,7 @@ def create_folders(src_list, target_dir):
 
 def remove_spaces_from_files(target_dir):
     images_with_spaces_found = False
-    for root, dirs, files in os.walk(os.path.join(parent_directory, target_dir)):
+    for root, dirs, files in os.walk(target_dir):
         for name in files:
             if name.find(" ") != -1:
                 images_with_spaces_found = True
@@ -290,15 +290,20 @@ def add_border_to_all_images(src_directory, target_dir):
     return bordered_images
 
 def full_process():
-    creatures = load_creatures()
-    creatures_dir = create_folders(creatures, "creatures")
-    # TODO: Automate extracting files, currently you must export manually
-    remove_spaces_from_files("creatures")
+    # # Loads creatures from Assets file
+    # creatures = load_creatures()
+    # # Creates folders to extract files into
+    # creatures_dir = create_folders(creatures, "creatures")
+    # # TODO: Automate extracting files from Assets.xml, currently you must export manually
+    # remove_spaces_from_files(os.path.join(parent_directory, "creatures"))
+
+    creatures_dir = os.path.join(parent_directory, "testing")
+
     target_dir = os.path.join(parent_directory, "x6")
     bordered_images = add_border_to_all_images(creatures_dir, target_dir)
 
-    for bi in bordered_images:
-        move_file(bi[0], target_dir, bi[1])
+    # for bi in bordered_images:
+    #     move_file(bi[0], target_dir, bi[1])
 
 # target_dir = os.path.join(parent_directory, "x6")
 # add_border_to_all_images(os.path.join(parent_directory, "test_folder"), target_dir)
@@ -315,3 +320,4 @@ def remove_reruns():
 
 # remove_reruns()
 full_process()
+# print(load_creatures())

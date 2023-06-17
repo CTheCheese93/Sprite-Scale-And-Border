@@ -1,3 +1,5 @@
+from PIL import Image
+
 class SpriteImage:
     def __init__(self, img_path):
         self._im = Image.open(img_path)
