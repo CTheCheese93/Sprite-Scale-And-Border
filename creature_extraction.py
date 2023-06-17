@@ -287,8 +287,7 @@ def add_border_to_all_images(src_directory, target_dir):
                 else:
                     bordered_image_path = add_border_to_image(os.path.join(root, name))
     
-    for bi in bordered_images:
-        move_file(bi[0], target_dir, bi[1])
+    return bordered_images
 
 def full_process():
     creatures = load_creatures()
@@ -296,7 +295,10 @@ def full_process():
     # TODO: Automate extracting files, currently you must export manually
     remove_spaces_from_files("creatures")
     target_dir = os.path.join(parent_directory, "x6")
-    add_border_to_all_images(creatures_dir, target_dir)
+    bordered_images = add_border_to_all_images(creatures_dir, target_dir)
+
+    for bi in bordered_images:
+        move_file(bi[0], target_dir, bi[1])
 
 # target_dir = os.path.join(parent_directory, "x6")
 # add_border_to_all_images(os.path.join(parent_directory, "test_folder"), target_dir)
