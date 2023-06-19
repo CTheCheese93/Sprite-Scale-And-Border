@@ -1,4 +1,4 @@
-from xml.dom.minidom import parse, parseString
+from xml.dom.minidom import parse
 from PIL import Image, ImageDraw, ImageFont
 import os
 
@@ -16,7 +16,6 @@ def get_assets():
 # Extracting Creatures from Asset List
 def load_creatures():
     creatures_dict = {}
-    creatures = []
 
     assets = get_assets()
 
@@ -26,7 +25,6 @@ def load_creatures():
         
         if creature not in creatures_dict and creature.find("_glow") == -1:
             creatures_dict[creature] = []
-            creatures.append(creature)
 
         if creature.find("_glow") == -1:
             creatures_dict[creature].append(a.getElementsByTagName("Name")[0].firstChild.nodeValue.replace(" ", "_"))
@@ -43,7 +41,7 @@ def output_to_file():
             print(creature_string)
             f.write(creature_string)
 
-# Create folders for item in the list
+# Create folders for items in the list
 def create_folders(src_list, target_dir):
     target_directory = os.path.join(parent_directory, target_dir)
 
@@ -74,27 +72,11 @@ def remove_spaces_from_files(target_dir):
     if not images_with_spaces_found:
         print("No files found with spaces")
 
-
 def get_image_size(filep):
     img = Image.open(filep)
     w = img.width
     h = img.height
     return {"width":w,"height":h}
-
-def test_modifying_image():
-    im = Image.open(os.path.join(parent_directory, "test_folder", "Idle_x6.png"))
-    rgb_img = im.convert('RGBA')
-    px = rgb_img.load()
-
-    top_left_x6px = (0, 0)
-    bottom_right_x6px = (0, 6)
-
-    px[415,297] = (0,0,0,255)
-    print(px[415,297])
-    rgb_img.save('new_test_dot.png')
-
-def cb(x, y):
-    print('Processing ({},{})'.format(x,y))
 
 def debug_pixel(si, x, y):
     print('({},{}) - {} - {}'.format(x, y, si.get_pixel_color(x, y), si.pixel_is_transparent(x, y)))
@@ -290,20 +272,20 @@ def add_border_to_all_images(src_directory, target_dir):
     return bordered_images
 
 def full_process():
-    # # Loads creatures from Assets file
-    # creatures = load_creatures()
-    # # Creates folders to extract files into
-    # creatures_dir = create_folders(creatures, "creatures")
-    # # TODO: Automate extracting files from Assets.xml, currently you must export manually
-    # remove_spaces_from_files(os.path.join(parent_directory, "creatures"))
+    # Loads creatures from Assets file
+    creatures = load_creatures()
+    # Creates folders to extract files into
+    creatures_dir = create_folders(creatures, "creatures")
+    # TODO: Automate extracting files from Assets.xml, currently you must export manually
+    remove_spaces_from_files(os.path.join(parent_directory, "creatures"))
 
     creatures_dir = os.path.join(parent_directory, "testing")
 
     target_dir = os.path.join(parent_directory, "x6")
     bordered_images = add_border_to_all_images(creatures_dir, target_dir)
 
-    # for bi in bordered_images:
-    #     move_file(bi[0], target_dir, bi[1])
+    for bi in bordered_images:
+        move_file(bi[0], target_dir, bi[1])
 
 # target_dir = os.path.join(parent_directory, "x6")
 # add_border_to_all_images(os.path.join(parent_directory, "test_folder"), target_dir)
