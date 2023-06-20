@@ -252,15 +252,230 @@ class MagnifiedPx:
 
 The MagPx holds onto the coordinates for the top-left and bottom-right pixels on the scaled image that act as the bounds for what a single pixel is on the original image. Meaning, the color value of pixel `(0,0)` on the original image should match with every pixel between `(0,0)` and `(5,5)` on the scaled image.
 
-A lot of what was done with this class was with intent to go programmatically go through the scaled image, moving the MagPx around. This didn't actually happen. Instead, I used this class to manual validate pixel values.
+A lot of what was done with this class was with intent to go programmatically go through the scaled image, moving the MagPx around. This didn't actually happen how I planned. Instead, I mainly used this class to manual validate pixel values.
 
 #### **Using Math to Create a Border**
 
-After manually validating pixels, I worked on the programmatic movement of the MagPx and pixel processing to realize early on that none of that was required. 
+Originally, the magpx would move and then check to see if there are any transparent pixels around it to sum a score for the target pixel.
+
+<img src=".readme_assets/CheckingPixelScore.png" alt="Checking A Single Pixels Score" />
+
+If a pixel has color, you add 1, if it doesn't, you add 0. The minimum score is 0 and the max is 5, with the image above resulting in a score of 3 for the pixel with a red border. The left neighboring pixel, if calculated, would result in a score of 2.
+
+There are problems with this method though, because just going off of score doesn't tell us anything. The image below shows us a similar score of 3, yet the pixel will need a border while the example prior would not.
+
+<img src=".readme_assets/ProblemScore.png" alt="Checking A Single Pixels Score" />
+
+To combat this, we simply keep track of whether or not the pixel being scored is itself transparent. This makes the logic super simple: If it has a score > 0 AND it's transparent, it needs a border.
+
+Bare in mind, we've been talking about this problem as if we are doing this on a pixel by pixel basis, but we're actually doing this on a 6x6px basis. There's a few ways we could do this, but I'll talk about three:
+
+1. Top-Left Pixel Full Trust: Only looking at the top-left pixel of the MagPix for the value
+2. Quick Scan: Look at Top-Left and Bottom-Right for matching values, assuming everything in between matches
+3. Full Scan: Look at every between the Top-Left and Bottom-Right to ensure the correct value throughout
+
+I chose option 2, because I already validated that scaling was happening cleanly and we are working with pixel based sprites and not an actual image, so there shouldn't be inconsistency in the individual pixel values in the first place.
+
+#### Using the scores to figure out what pixels need edited to make a border
+
+The steps here are relatively straightforward:
+
+1. Get a list of all MagPx cursor positions (i.e. a list of all the original image pixels)
+2. Get a score for each item on the list
+3. Filter out items ("pixels") that are not transparent or have a 0 for a score
+4. Return the resulting list
+
+```
+def get_border_list(si):
+    x6p_cursor_list = get_cursor_list(si.width, si.height)
+    all_x6px_border_scores = get_border_scores(si, x6p_cursor_list)
+
+    def transparent_and_gt0(target_px):
+        if all_x6px_border_scores[target_px]['is_transparent'] and all_x6px_border_scores[target_px]['transparency_score']:
+            return True
+        return False
+
+    return filter(transparent_and_gt0, all_x6px_border_scores)
+```
+
+Getting the cursor list is easy, but could probably be calculated with a little math
+
+```
+def get_cursor_list(width, height):
+    x6p = x6px()
+    x6p_count_x = width/6
+    x6p_count_y = height/6
+
+    r = []
+
+    y = 0
+    x = 0
+    while(y < x6p_count_y):
+        r.append(x6p.cursor())
+        x = 1
+        while(x < x6p_count_x):
+            x6p.move_right()
+            r.append(x6p.cursor())
+            x += 1
+        x6p.move_down()
+        x6p.align_left()
+        y += 1
+
+    return r
+```
+Getting the score requires a little bit of work to make sure we aren't looking at non-existing pixels
+
+```
+def get_border_scores(si, x6p_list):
+    def calculate_neighbor_transparencies(cursor, si):
+        tl, br = cursor
+        tlx, tly = tl
+        brx, bry = br
+        
+        ref_x6px = x6px()
+        ref_x6px.set_location(tlx, tly)
+
+        nesw = [
+            ref_x6px.get_move_up(),
+            ref_x6px.get_move_right(),
+            ref_x6px.get_move_down(),
+            ref_x6px.get_move_left()
+        ]
+
+        valid_nesw = {}
+
+        for neighbor in nesw:
+            if is_valid_position(neighbor, si.width, si.height):
+                if cursor_transparency_quick_scan(neighbor, si):
+                    valid_nesw[neighbor[0]] = 0
+                else:
+                    valid_nesw[neighbor[0]] = 1
+        
+        return valid_nesw
+    
+    border_scores = {}
+
+    for cursor in x6p_list:
+        tl, br = cursor
+        tlx, tly = tl
+        brx, bry = br
+
+        current_x6px_transparency_score = 0
+        current_x6p_is_transparent = True
+
+        # Get Current x6pixel transparency score
+        if not cursor_transparency_quick_scan(cursor, si):
+            current_x6px_transparency_score += 1
+            current_x6p_is_transparent = False
+
+        # Check if NWSE are transparent
+        neighbor_values_to_add = calculate_neighbor_transparencies(cursor, si)
+
+        # Add 0 if not transparent, 1 if it is
+        for neighbor in neighbor_values_to_add:
+            current_x6px_transparency_score += neighbor_values_to_add[neighbor]
+        
+        border_scores[tl] = {
+            "transparency_score": current_x6px_transparency_score,
+            "is_transparent": current_x6p_is_transparent
+        }
+    
+    return border_scores
+```
+
+And finally, we can go through each of the remaining items and start filling in pixels with Black (`(0,0,0,255)`).
+
+```
+def add_border_to_image(img_path):
+    new_image_path = scale_and_trim_image(img_path)
+    bordered_image_path = new_image_path.replace("_x6_borderless.png", "_x6_bordered.png")
+    
+    if os.path.exists(bordered_image_path):
+        print('Bordered Already Exists: {}'.format(bordered_image_path))
+        return bordered_image_path
+    
+    si = SpriteImage(new_image_path)
+    border_list = get_border_list(si)
+
+    print('Adding border to {}'.format(new_image_path))
+    for x6p in border_list:
+        x, y = x6p
+        yi = 0
+
+        while yi < 6:
+            xi = 0
+            while xi < 6:
+                si.img[x+xi,y+yi] = (0,0,0,255)
+                xi += 1
+            yi += 1
+
+    si.save(bordered_image_path)
+    return bordered_image_path
+```
+
+Because this whole process is meant to work together, the function shown returns the path to the newly created image. This setups us up for moving the files in a much more efficient manner than we originally were going to.
 
 ### Move all `*_x6_bordered.png` images to a `x6` folder, separated into their indvidual creature folders
 
+Before we talk about how we moved the files (it's pretty simple), let's talk about how we iterated through all the files and added borders to them.
 
+```
+def add_border_to_all_images(src_directory, target_dir):
+    bordered_images = []
+    for root, dirs, files in os.walk(src_directory):
+        for name in files:
+            if "Texture2D" not in root:
+                split_root = root.split("\\")
+                creature = split_root[len(split_root)-2]
+
+                if name.find("_x6_bordered") >= 0:
+                    print("Image is already bordered")
+                    bordered_images.append((os.path.join(root,name), creature))
+                else:
+                    bordered_image_path = add_border_to_image(os.path.join(root, name))
+    
+    return bordered_images
+```
+
+As you might expect, we took the original function (`add_border_to_image`) and wrapped it around another function (`add_border_to_all_images`) that will call it multiple times on different images.
+
+To get those different images, we walked the entire directory that was created way back when we created folders for each creature.
+
+When you exported to each creature folder, the image will export to `$Creature/Sprites/$Image`. If you were like me and too lazy to manually filter out the Texture2D results, you'll also have a `$Creature/Texture2D/*` directory. Thus, when we walk the directory using `os.walk`, we filter out the `Texture2D` results.
+
+We also check to see if the image in question is already bordered, if so, we move onto the next image. Note that if the image is already bordered, that means we've already processed it but it still exists in the original folder. This means that eventually we will stumble across the original image and it will want to make another bordered image.
+
+We handle this in `add_border_to_image()` which you can see up above. I could have created something more object oriented where we used that dict of creatures that contained a list of each filename that we created earlier, but my solution seemed more straightforward and effective for accomplishing what I needed.
+
+I'll likely change it to be more object oriented later.
+
+Back to movement.
+
+Once we have the list of fully qualified file paths to the newly created bordered images, we go through each one and move them to the target directory, in this case it was `x6/$Creature/$Image`.
+
+```
+bordered_images = add_border_to_all_images(creatures_dir, target_dir)
+
+    for bi in bordered_images:
+        move_file(bi[0], target_dir, bi[1])
+```
+
+```
+def move_file(target_file, target_dir, subfolder = None):
+    destination_file = ""
+    split_target = target_file.split("\\")
+    f = split_target[len(split_target)-1]
+    if subfolder:
+        destination_folder = os.path.join(target_dir,subfolder)
+        destination_file = os.path.join(target_dir,subfolder,f)
+        if not os.path.exists(destination_folder):
+            os.makedirs(destination_folder)
+    else:
+        destination_file = os.path.join(target_dir, f)
+
+    print('Moving {} to {}'.format(f, destination_file))
+    os.rename(target_file, destination_file)
+```
 
 ### Browse through the results with pride and eventually upload them
 

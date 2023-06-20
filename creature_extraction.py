@@ -190,8 +190,8 @@ def get_border_list(si):
     x6p_cursor_list = get_cursor_list(si.width, si.height)
     all_x6px_border_scores = get_border_scores(si, x6p_cursor_list)
 
-    def transparent_and_gt0(border_score):
-        if all_x6px_border_scores[border_score]['is_transparent'] and all_x6px_border_scores[border_score]['transparency_score']:
+    def transparent_and_gt0(target_px):
+        if all_x6px_border_scores[target_px]['is_transparent'] and all_x6px_border_scores[target_px]['transparency_score']:
             return True
         return False
 
@@ -248,6 +248,7 @@ def move_file(target_file, target_dir, subfolder = None):
         destination_folder = os.path.join(target_dir,subfolder)
         destination_file = os.path.join(target_dir,subfolder,f)
         if not os.path.exists(destination_folder):
+            print(target_file)
             os.makedirs(destination_folder)
     else:
         destination_file = os.path.join(target_dir, f)
@@ -257,27 +258,39 @@ def move_file(target_file, target_dir, subfolder = None):
 
 def add_border_to_all_images(src_directory, target_dir):
     bordered_images = []
+
     for root, dirs, files in os.walk(src_directory):
         for name in files:
             if "Texture2D" not in root:
+                print("Working with file: {}".format(os.path.join(root, name)))
                 split_root = root.split("\\")
                 creature = split_root[len(split_root)-2]
 
+                # Check if file itself is already bordered
                 if name.find("_x6_bordered") >= 0:
                     print("Image is already bordered")
+                    print("Adding already bordered image to list: {}".format(os.path.join(root, name)))
                     bordered_images.append((os.path.join(root,name), creature))
-                else:
+                # Check if file is borderless
+                elif name.find("_x6_borderless") >= 0:
                     bordered_image_path = add_border_to_image(os.path.join(root, name))
+                    print("Adding newly bordered image to list: {}".format(bordered_image_path))
+                    bordered_images.append((bordered_image_path, creature))
+                else:
+                    bordered_images.append((add_border_to_image(os.path.join(root, name)), creature))
     
+    for bi in bordered_images:
+        print("Bordered Image List: {}".format(bi))
+
     return bordered_images
 
 def full_process():
-    # Loads creatures from Assets file
-    creatures = load_creatures()
-    # Creates folders to extract files into
-    creatures_dir = create_folders(creatures, "creatures")
-    # TODO: Automate extracting files from Assets.xml, currently you must export manually
-    remove_spaces_from_files(os.path.join(parent_directory, "creatures"))
+    # # Loads creatures from Assets file
+    # creatures = load_creatures()
+    # # Creates folders to extract files into
+    # creatures_dir = create_folders(creatures, "creatures")
+    # # TODO: Automate extracting files from Assets.xml, currently you must export manually
+    # remove_spaces_from_files(os.path.join(parent_directory, "creatures"))
 
     creatures_dir = os.path.join(parent_directory, "testing")
 
@@ -285,6 +298,7 @@ def full_process():
     bordered_images = add_border_to_all_images(creatures_dir, target_dir)
 
     for bi in bordered_images:
+        print("Before Move File: {}".format(bi))
         move_file(bi[0], target_dir, bi[1])
 
 # target_dir = os.path.join(parent_directory, "x6")
@@ -294,8 +308,8 @@ def full_process():
 # Before I added checks for if borderless and bordered images were already created
 # I was getting a lot of runs where result images were being reprocessed.
 # This just removes all of them in one go.
-def remove_reruns():
-    for root, dirs, files in os.walk(".\\creatures"):
+def remove_reruns(src_path):
+    for root, dirs, files in os.walk(src_path):
         for name in files:
             if not name.find("_borderless_x6_bordered") == -1 or not name.find("_borderless_x6_borderless") == -1 or not name.find("_bordered_x6_bordered") == -1 or not name.find("_bordered_x6_borderless") == -1:
                 os.remove(os.path.join(root, name))
