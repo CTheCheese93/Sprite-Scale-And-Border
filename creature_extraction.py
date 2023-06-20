@@ -215,7 +215,13 @@ def scale_and_trim_image(filep):
     return new_image_path
 
 def add_border_to_image(img_path):
-    new_image_path = scale_and_trim_image(img_path)
+    new_image_path = ""
+    
+    if img_path.find("_x6_borderless.png") >= 0:
+        new_image_path = img_path
+    else:
+        new_image_path = scale_and_trim_image(img_path)
+    
     bordered_image_path = new_image_path.replace("_x6_borderless.png", "_x6_bordered.png")
     
     if os.path.exists(bordered_image_path):
@@ -240,49 +246,61 @@ def add_border_to_image(img_path):
     si.save(bordered_image_path)
     return bordered_image_path
 
-def move_file(target_file, target_dir, subfolder = None):
+def move_file(target_file, target_dir):
     destination_file = ""
     split_target = target_file.split("\\")
+    subfolder = split_target[len(split_target)-3]
     f = split_target[len(split_target)-1]
-    if subfolder:
-        destination_folder = os.path.join(target_dir,subfolder)
-        destination_file = os.path.join(target_dir,subfolder,f)
-        if not os.path.exists(destination_folder):
-            print(target_file)
-            os.makedirs(destination_folder)
-    else:
-        destination_file = os.path.join(target_dir, f)
+
+    destination_folder = os.path.join(target_dir,subfolder)
+    destination_file = os.path.join(target_dir,subfolder,f)
+   
+    if not os.path.exists(destination_folder):
+        print(target_file)
+        os.makedirs(destination_folder)
 
     print('Moving {} to {}'.format(f, destination_file))
     os.rename(target_file, destination_file)
 
 def add_border_to_all_images(src_directory, target_dir):
-    bordered_images = []
+    target_images = []
+
+    def is_bordered_image(fyle):
+        return fyle.find("_x6_bordered.png") >= 0
+
+    def is_borderless_image(fyle):
+        return fyle.find("_x6_borderless.png") >= 0
 
     for root, dirs, files in os.walk(src_directory):
-        for name in files:
-            if "Texture2D" not in root:
-                print("Working with file: {}".format(os.path.join(root, name)))
-                split_root = root.split("\\")
-                creature = split_root[len(split_root)-2]
+        if 'Texture2D' in dirs:
+            dirs.remove('Texture2D')
+        
+        for fyle in files:
+            target_images.append(os.path.join(root, fyle))
 
-                # Check if file itself is already bordered
-                if name.find("_x6_bordered") >= 0:
-                    print("Image is already bordered")
-                    print("Adding already bordered image to list: {}".format(os.path.join(root, name)))
-                    bordered_images.append((os.path.join(root,name), creature))
-                # Check if file is borderless
-                elif name.find("_x6_borderless") >= 0:
-                    bordered_image_path = add_border_to_image(os.path.join(root, name))
-                    print("Adding newly bordered image to list: {}".format(bordered_image_path))
-                    bordered_images.append((bordered_image_path, creature))
-                else:
-                    bordered_images.append((add_border_to_image(os.path.join(root, name)), creature))
+    bordered_files = list(filter(is_bordered_image, target_images))
+
+    for bf in bordered_files:
+        borderless = bf.replace("_x6_bordered.png", "_x6_borderless.png")
+        original = bf.replace("_x6_bordered.png", ".png")
+
+        target_images.remove(borderless)
+        target_images.remove(original)
+        target_images.remove(bf)
+
+    borderless_files = list(filter(is_borderless_image, target_images))
+
+    for blf in borderless_files:
+        original = blf.replace("_x6_borderless.png", ".png")
+        target_images.remove(original)
     
-    for bi in bordered_images:
-        print("Bordered Image List: {}".format(bi))
+    i = 0
 
-    return bordered_images
+    for ti in target_images:
+        bordered_image_path = add_border_to_image(ti)
+        bordered_files.append(bordered_image_path)
+
+    return bordered_files
 
 def full_process():
     # # Loads creatures from Assets file
@@ -298,8 +316,7 @@ def full_process():
     bordered_images = add_border_to_all_images(creatures_dir, target_dir)
 
     for bi in bordered_images:
-        print("Before Move File: {}".format(bi))
-        move_file(bi[0], target_dir, bi[1])
+        move_file(bi, target_dir)
 
 # target_dir = os.path.join(parent_directory, "x6")
 # add_border_to_all_images(os.path.join(parent_directory, "test_folder"), target_dir)
