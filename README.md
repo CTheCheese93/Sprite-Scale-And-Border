@@ -457,21 +457,22 @@ Once we have the list of fully qualified file paths to the newly created bordere
 bordered_images = add_border_to_all_images(creatures_dir, target_dir)
 
     for bi in bordered_images:
-        move_file(bi[0], target_dir, bi[1])
+        move_file(bi, target_dir)
 ```
 
 ```
-def move_file(target_file, target_dir, subfolder = None):
+def move_file(target_file, target_dir):
     destination_file = ""
     split_target = target_file.split("\\")
+    subfolder = split_target[len(split_target)-3]
     f = split_target[len(split_target)-1]
-    if subfolder:
-        destination_folder = os.path.join(target_dir,subfolder)
-        destination_file = os.path.join(target_dir,subfolder,f)
-        if not os.path.exists(destination_folder):
-            os.makedirs(destination_folder)
-    else:
-        destination_file = os.path.join(target_dir, f)
+
+    destination_folder = os.path.join(target_dir,subfolder)
+    destination_file = os.path.join(target_dir,subfolder,f)
+   
+    if not os.path.exists(destination_folder):
+        print(target_file)
+        os.makedirs(destination_folder)
 
     print('Moving {} to {}'.format(f, destination_file))
     os.rename(target_file, destination_file)
