@@ -1,3 +1,8 @@
+from xml.dom.minidom import parse
+import os
+
+parent_directory = os.getcwd()
+
 # Getting List of Assets from AssetStudio XML Export
 def get_assets():
     document = parse("assets.xml")

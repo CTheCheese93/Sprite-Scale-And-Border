@@ -1,3 +1,8 @@
+from PIL import Image, ImageDraw, ImageFont
+from sprite_image import SpriteImage
+from magnified_px import MagnifiedPx as x6px
+import os
+
 def get_image_size(filep):
     img = Image.open(filep)
     w = img.width
