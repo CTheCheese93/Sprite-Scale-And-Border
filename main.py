@@ -18,9 +18,9 @@ def full_process():
     # # TODO: Automate extracting files from Assets.xml, currently you must export manually
     # remove_spaces_from_files(os.path.join(parent_directory, "creatures"))
 
-    creatures_dir = os.path.join(parent_directory, "testing")
+    creatures_dir = os.path.join(parent_directory, "testing", "input")
 
-    target_dir = os.path.join(parent_directory, "x6")
+    target_dir = os.path.join(parent_directory, "testing", "output")
     bordered_images = add_border_to_all_images(creatures_dir, target_dir)
 
     for bi in bordered_images:
