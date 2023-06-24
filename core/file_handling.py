@@ -9,6 +9,17 @@ def get_assets():
     assets = document.getElementsByTagName("Asset")
     return assets
 
+def get_assets(filep):
+    document = parse(filep)
+    assets = document.getElementsByTagName("Asset")
+    return assets
+
+def get_container(asset):
+    return asset.getElementsByTagName("Container")[0].firstChild.nodeValue
+
+def get_sprite_name(asset):
+    return asset.getElementsByTagName("Name")[0].firstChild.nodeValue
+
 # Extracting Creatures from Asset List
 def load_creatures():
     creatures_dict = {}
