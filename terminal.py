@@ -28,20 +28,34 @@ def get_option_choice(options):
         print('{}: {}'.format(i,o))
         i += 1
     
-    print("--------------------")
-    print("[b]ack | [r]un\n")
+    print("------------------------")
+    print("[b]ack | [r]un | e[x]it\n")
     return input('Choose an Option: ').lower()[0]
 
-def default_option_chosen(chosen_option):
+def default_option_chosen(context, chosen_option):
     match chosen_option:
         case "r":
             print("Run Chosen")
         case "b":
             print("Back Chosen")
+            context.pop_menu()
+        case "x":
+            print("Exit Chosen")
+            exit()
         case _:
             print("No Option Chosen")
 
-def main_menu():
+def extraction_menu(context):
+    print("------------ Extraction Settings -------------")
+    print("-")
+    
+    option_chosen = get_option_choice(["Fake","Options"])
+
+    match option_chosen:
+        case _:
+            default_option_chosen(context, option_chosen)
+
+def main_menu(context):
     options = [
         "Extraction Settings",
         "Editing Settings",
@@ -53,12 +67,13 @@ def main_menu():
     match chosen_option:
         case "1":
             print("Extraction Settings Chosen")
+            context.push_menu(extraction_menu)
         case "2":
             print("Editing Settings Chosen")
         case "3":
             print("Preview Results Chosen")
         case _:
-            default_option_chosen(chosen_option)
+            default_option_chosen(context, chosen_option)
 
 def main_loop():
     settings = {
@@ -87,4 +102,32 @@ def main_loop():
 
     # Set Asset Output Dir
 
-main_menu()
+class TerminalContext:
+    menu_stack = []
+    stack_idx = 0
+
+    def __init__(self, main_menu):
+        self.menu_stack.append(main_menu)
+
+    def push_menu(self, menu):
+        self.menu_stack.append(menu)
+        self.stack_idx += 1
+
+    def pop_menu(self):
+        if len(self.menu_stack) > 1:
+            self.menu_stack.pop()
+            self.stack_idx -= 1
+
+    def active_menu(self):
+        return self.menu_stack[self.stack_idx]
+
+class Terminal:
+    def __init__(self, main_menu):
+        self.context = TerminalContext(main_menu)
+
+    def run(self):
+        while True:
+            self.context.active_menu()(self.context)
+
+terminal = Terminal(main_menu)
+terminal.run()
